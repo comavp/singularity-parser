@@ -5,9 +5,9 @@ description = ""
 authors = [
     {name = "comavp",email = "comavp@yandex.ru"}
 ]
-readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<4.0"
 dependencies = [
+    "loguru (>=0.7.3,<0.8.0)"
 ]
 
 
