@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column('id', sa.Integer, nullable=False, primary_key=True),
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()')),
+        sa.Column('file_name', sa.VARCHAR, nullable=False),
         sa.Column('data', sa.Text, nullable=False),
         sa.Column('hash', sa.VARCHAR, nullable=False)
     )
