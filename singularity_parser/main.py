@@ -1,3 +1,5 @@
+import json
+
 from loguru import logger
 import hashlib
 
@@ -17,7 +19,7 @@ if __name__ == '__main__':
         logger.info(f"Найден файл {backup_file.name}, MD5 хэш содержимого: {file_hash}")
         db_manager = DatabaseManager()
         if not db_manager.backup_file_exists(backup_file.name, file_hash):
-            db_manager.save_backup_file(backup_file.name, str(backup_file.content), file_hash)
+            db_manager.save_backup_file(backup_file.name, json.dumps(backup_file.content['data']), file_hash)
         db_manager.delete_last_backup_files(MAX_BACKUP_FILES)
     except BackupFilesNotFoundError as e:
         logger.warning(str(e))
