@@ -21,17 +21,16 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.create_table(
         'projects',
-        sa.Column('id', sa.Integer, nullable=False, primary_key=True),
+        sa.Column('id', sa.VARCHAR, nullable=False, primary_key=True),
         sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()')),
         sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()')),
         sa.Column('title', sa.VARCHAR, nullable=False),
-        sa.Column('singularity_id', sa.VARCHAR, nullable=False),
+        sa.Column('singularity_created_date', sa.VARCHAR, nullable=True),
         sa.Column('singularity_journal_date', sa.DateTime, nullable=True),
+        sa.Column('singularity_delete_date', sa.DateTime, nullable=True),
         sa.Column('original_data', postgresql.JSONB())
     )
 
 
-
 def downgrade() -> None:
-    """Downgrade schema."""
-    pass
+    op.drop_table('projects')
