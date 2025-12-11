@@ -19,9 +19,16 @@ if __name__ == '__main__':
         file_hash = hashlib.md5(str(backup_file.content).encode()).hexdigest()
         logger.info(f"Найден файл {backup_file.name}, MD5 хэш содержимого: {file_hash}")
         db_manager = DatabaseManager()
+
         if not db_manager.backup_file_exists(backup_file.name, file_hash):
             db_manager.save_backup_file(backup_file.name, json.dumps(backup_file.content), file_hash)
+
         current_state = extract_current_state_from_backup_file(backup_file.content)
+        db_manager.save_projects(current_state.active_projects)
+        db_manager.save_projects(current_state.archived_projects)
+        db_manager.save_tasks(current_state.active_tasks)
+        db_manager.save_tasks(current_state.archived_tasks)
+
         db_manager.delete_last_backup_files(MAX_BACKUP_FILES)
     except BackupFilesNotFoundError as e:
         logger.warning(str(e))

@@ -79,3 +79,79 @@ class DatabaseManager:
         finally:
             cursor.close()
             self.__close_db_connection()
+
+    def save_projects(self, projects_list):
+        try:
+            cursor = self.__create_cursor()
+            for project in projects_list:
+                self.save_or_update_project(cursor, project)
+            cursor.connection.commit()
+            logger.info(f"Проектов сохранено в БД: {len(projects_list)}")
+        except (Exception, Error) as error:
+            cursor.connection.rollback()
+            logger.error(f"Ошибка при работе с PostgreSql: {str(error)}")
+        finally:
+            cursor.close()
+            self.__close_db_connection()
+
+    def save_or_update_project(self, cursor, project):
+        select_statement = "SELECT id FROM projects WHERE id = %s"
+        cursor.execute(select_statement, (project.id,))
+        result = cursor.fetchone()
+        if result is None:
+            upsert_statement = "INSERT INTO projects (" \
+                        "id, title, singularity_created_date, singularity_journal_date, singularity_delete_date, " \
+                        "original_data) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s);"
+            cursor.execute(upsert_statement, (
+                project.id,
+                project.title,
+                project.created_date,
+                project.journal_date,
+                project.delete_date,
+                project.original_data))
+            logger.info(f"Проект '{project.title}' успешно сохранен в БД")
+        # else:
+        #     upsert_statement = "UPDATE projects SET title = %s, singularity_created_date = %s, " \
+        #                        "singularity_journal_date = %s, singularity_delete_date = %s, original_data = %s) " \
+        #                         "WHERE id = %s;"
+        #     cursor.execute(upsert_statement, (
+        #         project.title,
+        #         project.created_date,
+        #         project.journal_date,
+        #         project.delete_date,
+        #         project.original_data,
+        #         project.id))
+
+    def save_tasks(self, tasks_list):
+        try:
+            cursor = self.__create_cursor()
+            for task in tasks_list:
+                self.save_or_update_task(cursor, task)
+            cursor.connection.commit()
+            logger.info(f"Задач сохранено в БД: {len(tasks_list)}")
+        except (Exception, Error) as error:
+            cursor.connection.rollback()
+            logger.error(f"Ошибка при работе с PostgreSql: {str(error)}")
+        finally:
+            cursor.close()
+            self.__close_db_connection()
+
+    def save_or_update_task(self, cursor, task):
+        select_statement = "SELECT id FROM tasks WHERE id = %s"
+        cursor.execute(select_statement, (task.id,))
+        result = cursor.fetchone()
+        if result is None:
+            upsert_statement = "INSERT INTO tasks (" \
+                        "id, title, singularity_created_date, singularity_journal_date, singularity_delete_date, " \
+                        "original_data, project_id) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+            cursor.execute(upsert_statement, (
+                task.id,
+                task.title,
+                task.created_date,
+                task.journal_date,
+                task.delete_date,
+                task.original_data,
+                task.project_id))
+            logger.info(f"Задача '{task.title}' успешно сохранена в БД")
