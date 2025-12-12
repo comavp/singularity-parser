@@ -26,6 +26,7 @@ if __name__ == '__main__':
         current_state = extract_current_state_from_backup_file(backup_file.content)
         db_manager.save_projects(current_state.active_projects)
         db_manager.save_projects(current_state.archived_projects)
+        db_manager.save_projects(current_state.deleted_projects)
         db_manager.save_tasks(current_state.active_tasks)
         db_manager.save_tasks(current_state.archived_tasks)
 

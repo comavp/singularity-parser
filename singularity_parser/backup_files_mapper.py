@@ -3,11 +3,12 @@ import json
 
 class TasksSystemCurrentState:
 
-    def __init__(self, active_tasks, archived_tasks, active_projects, archived_projects):
+    def __init__(self, active_tasks, archived_tasks, active_projects, archived_projects, deleted_projects):
         self.active_tasks = active_tasks
         self.archived_tasks = archived_tasks
         self.active_projects = active_projects
         self.archived_projects = archived_projects
+        self.deleted_projects = deleted_projects
 
 
 class Task:
@@ -41,7 +42,7 @@ def create_task_from_json(json_task):
         json_task.get('journalDate'),
         json_task.get('deleteDate'),
         json.dumps(json_task),
-        json_task.get('project_id')
+        json_task.get('projectId')
     )
 
 
@@ -66,5 +67,6 @@ def extract_current_state_from_backup_file(file_json_content):
     active_projects = [project for project in all_projects if
                        project.delete_date is None and project.journal_date is None]
     archived_projects = [project for project in all_projects if project.journal_date is not None]
+    deleted_projects = [project for project in all_projects if project.delete_date is not None]
 
-    return TasksSystemCurrentState(active_tasks, archived_tasks, active_projects, archived_projects)
+    return TasksSystemCurrentState(active_tasks, archived_tasks, active_projects, archived_projects, deleted_projects)
