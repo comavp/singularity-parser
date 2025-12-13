@@ -1,5 +1,3 @@
-import traceback
-
 import psycopg2
 from loguru import logger
 from psycopg2 import Error
@@ -85,10 +83,13 @@ class DatabaseManager:
     def save_projects(self, projects_list):
         try:
             cursor = self.__create_cursor()
+            result = {"inserted": 0, "updated": 0}
             for project in projects_list:
-                self.save_or_update_project(cursor, project)
+                match self.save_or_update_project(cursor, project):
+                    case 2: result["inserted"] = result["inserted"] + 1
+                    case 1: result["updated"] = result["updated"] + 1
             cursor.connection.commit()
-            logger.info(f"Проектов сохранено в БД: {len(projects_list)}")
+            logger.info(f"сохранено в БД: {result['inserted']}, обновлено: {result['updated']}")
         except (Exception, Error) as error:
             cursor.connection.rollback()
             logger.error(f"Ошибка при работе с PostgreSql: {str(error)}")
@@ -114,6 +115,7 @@ class DatabaseManager:
                 project.modificated_date,
                 project.original_data))
             logger.info(f"Проект '{project.title}' успешно сохранен в БД")
+            return 2
         elif project.modificated_date > int(result[0]):
             upsert_statement = "UPDATE projects SET title = %s, singularity_created_date = %s, " \
                                "singularity_journal_date = %s, singularity_delete_date = %s, " \
@@ -128,14 +130,19 @@ class DatabaseManager:
                 project.original_data,
                 project.id))
             logger.info(f"Проект '{project.title}' успешно обновлен")
+            return 1
+        return 0
 
     def save_tasks(self, tasks_list):
         try:
             cursor = self.__create_cursor()
+            result = {"inserted": 0, "updated": 0}
             for task in tasks_list:
-                self.save_or_update_task(cursor, task)
+                match self.save_or_update_task(cursor, task):
+                    case 2: result["inserted"] = result["inserted"] + 1
+                    case 1: result["updated"] = result["updated"] + 1
             cursor.connection.commit()
-            logger.info(f"Задач сохранено в БД: {len(tasks_list)}")
+            logger.info(f"Задач сохранено в БД: {result['inserted']}, обновлено: {result['updated']}")
         except (Exception, Error) as error:
             cursor.connection.rollback()
             logger.error(f"Ошибка при работе с PostgreSql: {str(error)}")
@@ -162,6 +169,7 @@ class DatabaseManager:
                 task.original_data,
                 task.project_id))
             logger.info(f"Задача '{task.title}' успешно сохранена в БД")
+            return 2
         elif task.modificated_date > int(result[0]):
             upsert_statement = "UPDATE tasks SET title = %s, singularity_created_date = %s, " \
                                "singularity_journal_date = %s, singularity_delete_date = %s, " \
@@ -176,3 +184,5 @@ class DatabaseManager:
                 task.original_data,
                 task.id))
             logger.info(f"Задача '{task.title}' успешно обновлена")
+            return 1
+        return 0
