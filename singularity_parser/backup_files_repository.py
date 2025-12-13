@@ -1,3 +1,5 @@
+import traceback
+
 import psycopg2
 from loguru import logger
 from psycopg2 import Error
@@ -95,33 +97,37 @@ class DatabaseManager:
             self.__close_db_connection()
 
     def save_or_update_project(self, cursor, project):
-        select_statement = "SELECT id FROM projects WHERE id = %s"
+        select_statement = "SELECT singularity_modificated_date FROM projects WHERE id = %s;"
         cursor.execute(select_statement, (project.id,))
         result = cursor.fetchone()
         if result is None:
             upsert_statement = "INSERT INTO projects (" \
                         "id, title, singularity_created_date, singularity_journal_date, singularity_delete_date, " \
-                        "original_data) " \
-                        "VALUES (%s, %s, %s, %s, %s, %s);"
+                        "singularity_modificated_date, original_data) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s);"
             cursor.execute(upsert_statement, (
                 project.id,
                 project.title,
                 project.created_date,
                 project.journal_date,
                 project.delete_date,
+                project.modificated_date,
                 project.original_data))
             logger.info(f"Проект '{project.title}' успешно сохранен в БД")
-        # else:
-        #     upsert_statement = "UPDATE projects SET title = %s, singularity_created_date = %s, " \
-        #                        "singularity_journal_date = %s, singularity_delete_date = %s, original_data = %s) " \
-        #                         "WHERE id = %s;"
-        #     cursor.execute(upsert_statement, (
-        #         project.title,
-        #         project.created_date,
-        #         project.journal_date,
-        #         project.delete_date,
-        #         project.original_data,
-        #         project.id))
+        elif project.modificated_date > int(result[0]):
+            upsert_statement = "UPDATE projects SET title = %s, singularity_created_date = %s, " \
+                               "singularity_journal_date = %s, singularity_delete_date = %s, " \
+                               "singularity_modificated_date = %s, original_data = %s " \
+                               "WHERE id = %s;"
+            cursor.execute(upsert_statement, (
+                project.title,
+                project.created_date,
+                project.journal_date,
+                project.delete_date,
+                project.modificated_date,
+                project.original_data,
+                project.id))
+            logger.info(f"Проект '{project.title}' успешно обновлен")
 
     def save_tasks(self, tasks_list):
         try:
@@ -138,20 +144,35 @@ class DatabaseManager:
             self.__close_db_connection()
 
     def save_or_update_task(self, cursor, task):
-        select_statement = "SELECT id FROM tasks WHERE id = %s"
+        select_statement = "SELECT singularity_modificated_date FROM tasks WHERE id = %s"
         cursor.execute(select_statement, (task.id,))
         result = cursor.fetchone()
         if result is None:
             upsert_statement = "INSERT INTO tasks (" \
                         "id, title, singularity_created_date, singularity_journal_date, singularity_delete_date, " \
-                        "original_data, project_id) " \
-                        "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+                        "singularity_modificated_date, original_data, project_id) " \
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
             cursor.execute(upsert_statement, (
                 task.id,
                 task.title,
                 task.created_date,
                 task.journal_date,
                 task.delete_date,
+                task.modificated_date,
                 task.original_data,
                 task.project_id))
             logger.info(f"Задача '{task.title}' успешно сохранена в БД")
+        elif task.modificated_date > int(result[0]):
+            upsert_statement = "UPDATE tasks SET title = %s, singularity_created_date = %s, " \
+                               "singularity_journal_date = %s, singularity_delete_date = %s, " \
+                               "singularity_modificated_date = %s, original_data = %s " \
+                               "WHERE id = %s;"
+            cursor.execute(upsert_statement, (
+                task.title,
+                task.created_date,
+                task.journal_date,
+                task.delete_date,
+                task.modificated_date,
+                task.original_data,
+                task.id))
+            logger.info(f"Задача '{task.title}' успешно обновлена")

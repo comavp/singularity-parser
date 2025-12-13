@@ -13,24 +13,26 @@ class TasksSystemCurrentState:
 
 class Task:
 
-    def __init__(self, id, title, created_date, journal_date, delete_date, original_data, project_id):
+    def __init__(self, id, title, created_date, journal_date, delete_date, modificated_date, original_data, project_id):
         self.id = id
         self.title = title
         self.created_date = created_date
         self.journal_date = journal_date
         self.delete_date = delete_date
+        self.modificated_date = modificated_date
         self.original_data = original_data
         self.project_id = project_id
 
 
 class Project:
 
-    def __init__(self, id, title, created_date, journal_date, delete_date, original_data):
+    def __init__(self, id, title, created_date, journal_date, delete_date, modificated_date, original_data):
         self.id = id
         self.title = title
         self.created_date = created_date
         self.journal_date = journal_date
         self.delete_date = delete_date
+        self.modificated_date = modificated_date
         self.original_data = original_data
 
 
@@ -41,6 +43,7 @@ def create_task_from_json(json_task):
         json_task.get('createdDate'),
         json_task.get('journalDate'),
         json_task.get('deleteDate'),
+        json_task.get('modificatedDate'),
         json.dumps(json_task),
         json_task.get('projectId')
     )
@@ -53,6 +56,7 @@ def create_project_from_json(json_project):
         json_project.get('createdDate'),
         json_project.get('journalDate'),
         json_project.get('deleteDate'),
+        json_project.get('modificatedDate'),
         json.dumps(json_project)
     )
 
